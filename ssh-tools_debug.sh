@@ -1,8 +1,8 @@
 #/bin/bash
-
+source ~/.mybin/iterm2.sh
 echo 请选择你的机器列表
 # define BASE PATH
-BASE_PATH='/Users/dueb/github/codesummary/myshell/ssh-tools'
+BASE_PATH='/Users/dueb/github/ssh-tools'
 # 定义数据相关的文件
 function readDatafile()
 {
@@ -46,12 +46,9 @@ function direct()
 {
     if [[ -n $DEFAULT_SOURCE ]]; then
       select=$DEFAULT_SOURCE
-      #echo "default" $select
       # using split port
       splitAddr ${HOST_ARR[$select]};
-      source $BASE_PATH/colorssh.sh $select
-      sshpass -p ${PASS_ARR[$select]} ssh -p 22 ${HOST_ARR[$select]}
-      #expect $DIRECT_FILE $TEMP_ADDR ${PASS_ARR[$select]}
+      expect $DIRECT_FILE $TEMP_ADDR ${PASS_ARR[$select]}
     else
       printList $1
       read select
@@ -59,13 +56,11 @@ function direct()
         # 直接连接的机器
         echo 正在连接服务器 ${HOST_ARR[$select]}
         splitAddr ${HOST_ARR[$select]}
-        source $BASE_PATH/colorssh.sh $select
-        #expect $DIRECT_FILE $TEMP_ADDR ${PASS_ARR[$select]}
-        sshpass -p ${PASS_ARR[$select]} ssh -p 22 ${HOST_ARR[$select]}
+        expect $DIRECT_FILE $TEMP_ADDR ${PASS_ARR[$select]}
       else
         echo 输入的数字不正确
       fi   
-  fi
+    fi
 }
 # 跳板机
 function step(){
@@ -99,9 +94,8 @@ function step(){
   fi
 }
 # fefault type
-readDatafile $*
+readDatafile
 arr_len=${#HOST_ARR[@]} 
-
 if [[ -n $DEFAULT_TYPE ]]; then
   type=$DEFAULT_TYPE
 else
@@ -119,9 +113,6 @@ case "$type" in
        direct 2 
        ;;
     "3")
-       direct 3 
-       ;;
-    "4")
        step 2
        ;;
     "q")

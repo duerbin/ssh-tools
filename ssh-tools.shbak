@@ -1,26 +1,21 @@
 #/bin/bash
-
 echo 请选择你的机器列表
 # define BASE PATH
-BASE_PATH='/Users/dueb/github/codesummary/myshell/ssh-tools'
+BASE_PATH=./
 # 定义数据相关的文件
-function readDatafile()
-{
-	DATA_FILE=$BASE_PATH/data/ssh.dat
-	DATA_FILE_tmp=$BASE_PATH/data/.ssh.dat
-	`cat $DATA_FILE|grep -Ev '^$|#' >$DATA_FILE_tmp`
-	DIRECT_FILE=$BASE_PATH/exp/direct.exp
-	STEP_FILE=$BASE_PATH/exp/step.exp
-	TYPE_ARR=($(awk '{print $1}' $DATA_FILE_tmp))
-	HOST_ARR=($(awk '{print $2}' $DATA_FILE_tmp))
-	PASS_ARR=($(awk '{print $3}' $DATA_FILE_tmp))
-	FORWARD_ARR=($(awk 'BEGIN {i=0}{if($1 !~ /^#/) i+=1} END {print $3}' $DATA_FILE_tmp))
-	FORWARD_ARR=($(awk 'BEGIN {i=0}{if($1 !~ /^#/) i+=1} END {print $4}' $DATA_FILE_tmp))
-	DEFAULT_TYPE=$1
-	DEFAULT_SOURCE=$2
-	DEFAULT_TARGET=$3
-	TEMP_ADDR="roo@127.0.0.1 22"
-}
+DATA_FILE=$BASE_PATH/data/ssh.dat
+# 定义执行ssh的文件
+DIRECT_FILE=$BASE_PATH/exp/direct.exp
+STEP_FILE=$BASE_PATH/exp/step.exp
+TYPE_ARR=($(awk '{print $1}' $DATA_FILE))
+HOST_ARR=($(awk '{print $2}' $DATA_FILE))
+PASS_ARR=($(awk '{print $3}' $DATA_FILE))
+FORWARD_ARR=($(awk 'BEGIN {i=0}{if($1 !~ /^#/) i+=1} END {print $3}' $DATA_FILE))
+FORWARD_ARR=($(awk 'BEGIN {i=0}{if($1 !~ /^#/) i+=1} END {print $4}' $DATA_FILE))
+DEFAULT_TYPE=$1
+DEFAULT_SOURCE=$2
+DEFAULT_TARGET=$3
+TEMP_ADDR="roo@127.0.0.1 22"
 # def for host
 function splitAddr(){
   address=$1
@@ -30,7 +25,6 @@ function splitAddr(){
   else
     TEMP_ADDR="${arr[0]} 22"
   fi
-  echo $TEMP_ADDR
 }
 # 用于打印服务器列表
 function printList(){
@@ -46,26 +40,21 @@ function direct()
 {
     if [[ -n $DEFAULT_SOURCE ]]; then
       select=$DEFAULT_SOURCE
-      #echo "default" $select
       # using split port
       splitAddr ${HOST_ARR[$select]};
-      source $BASE_PATH/colorssh.sh $select
-      sshpass -p ${PASS_ARR[$select]} ssh -p 22 ${HOST_ARR[$select]}
-      #expect $DIRECT_FILE $TEMP_ADDR ${PASS_ARR[$select]}
+      expect $DIRECT_FILE $TEMP_ADDR ${PASS_ARR[$select]}
     else
-      printList $1
+      printList 0
       read select
       if [[ ${arr_len} -gt $select ]]; then
         # 直接连接的机器
         echo 正在连接服务器 ${HOST_ARR[$select]}
         splitAddr ${HOST_ARR[$select]}
-        source $BASE_PATH/colorssh.sh $select
-        #expect $DIRECT_FILE $TEMP_ADDR ${PASS_ARR[$select]}
-        sshpass -p ${PASS_ARR[$select]} ssh -p 22 ${HOST_ARR[$select]}
+        expect $DIRECT_FILE $TEMP_ADDR ${PASS_ARR[$select]}
       else
         echo 输入的数字不正确
       fi   
-  fi
+    fi
 }
 # 跳板机
 function step(){
@@ -99,33 +88,21 @@ function step(){
   fi
 }
 # fefault type
-readDatafile $*
+echo #HOST_ARR
 arr_len=${#HOST_ARR[@]} 
-
+echo $arr_len
 if [[ -n $DEFAULT_TYPE ]]; then
   type=$DEFAULT_TYPE
 else
-  echo "请选择连接的类型：0=mydev 1=sd，2=ceshi,a=all"
+  echo "请选择连接的类型：1直接连接，2 跳板"
   read type
 fi
 case "$type" in
-    "0")
-       direct 0 
-       ;;
     "1")
-       direct 1 
+       direct 
        ;;
     "2")
-       direct 2 
-       ;;
-    "3")
-       direct 3 
-       ;;
-    "4")
-       step 2
-       ;;
-    "q")
-	   echo "exit ok"
+       step 
        ;;
     *)
        #其它输入

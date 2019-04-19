@@ -1,0 +1,8 @@
+#!/bin/expect
+set ip [lindex $argv 0 ]  
+set port [lindex $argv 1]
+set passwd [lindex $argv 2 ] 
+set timeout 10
+sshpass -p $passwd ssh -p $port 
+send "clear\r"
+interact
